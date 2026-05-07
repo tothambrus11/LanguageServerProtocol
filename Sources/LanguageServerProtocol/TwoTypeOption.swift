@@ -1,7 +1,10 @@
 import Foundation
 
+/// A union type that can hold one of two possible types.
 public enum TwoTypeOption<T, U> {
+	/// The first variant.
 	case optionA(T)
+	/// The second variant.
 	case optionB(U)
 }
 

@@ -2,10 +2,14 @@ import Foundation
 
 /// A structure representing a Semantic Token.
 public struct Token: Codable, Hashable, Sendable {
+	/// The range of the token in the document.
 	public let range: LSPRange
+	/// The type of the token.
 	public let tokenType: String
+	/// The set of modifier names applied to the token.
 	public let modifiers: Set<String>
 
+	/// Creates an instance from its parts.
 	public init(range: LSPRange, tokenType: String, modifiers: Set<String> = Set()) {
 		self.range = range
 		self.tokenType = tokenType
@@ -16,9 +20,12 @@ public struct Token: Codable, Hashable, Sendable {
 /// Stores and updates raw Semantic Token data and converts it into Tokens.
 public final class TokenRepresentation {
 	private var data: [UInt32]
+	/// The result id of the last applied response, if any.
 	public private(set) var lastResultId: String?
+	/// The legend used to interpret token types and modifiers.
 	public let legend: SemanticTokensLegend
 
+	/// Creates a new representation with the given legend.
 	public init(legend: SemanticTokensLegend) {
 		self.data = []
 		self.legend = legend
@@ -130,6 +137,7 @@ public final class TokenRepresentation {
 }
 
 extension TokenRepresentation {
+	/// Applies a delta response to the token representation.
 	public func applyResponse(_ response: SemanticTokensDeltaResponse) -> [LSPRange] {
 		switch response {
 		case .optionA(let fullResponse):
@@ -145,6 +153,7 @@ extension TokenRepresentation {
 		}
 	}
 
+	/// Applies a full response to the token representation.
 	public func applyResponse(_ response: SemanticTokensResponse) -> [LSPRange] {
 		guard let response = response else {
 			self.lastResultId = nil

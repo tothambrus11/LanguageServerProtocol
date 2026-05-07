@@ -1,8 +1,12 @@
 import Foundation
 
+/// A union type that can hold one of three possible types.
 public enum ThreeTypeOption<T, U, V> {
+	/// The first variant.
 	case optionA(T)
+	/// The second variant.
 	case optionB(U)
+	/// The third variant.
 	case optionC(V)
 }
 

@@ -1,12 +1,14 @@
 import Foundation
 
 extension ClientNotification {
+	/// Whether this notification mutates the server's state.
 	public var mutatesServerState: Bool {
 		return true
 	}
 }
 
 extension ClientRequest {
+	/// Whether this request mutates the server's state.
 	public var mutatesServerState: Bool {
 		switch self {
 		case .initialize:

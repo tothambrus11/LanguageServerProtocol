@@ -1,7 +1,9 @@
 import Foundation
 import JSONRPC
 
+/// A concrete `ServerConnection` implementation that communicates over JSON-RPC.
 public actor JSONRPCServerConnection: ServerConnection {
+	/// The sequence of server events.
 	public let eventSequence: EventSequence
 	private let eventContinuation: EventSequence.Continuation
 	private var eventTask: Task<Void, Never>?

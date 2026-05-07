@@ -8,19 +8,24 @@ extension AsyncSequence {
 
 /// Simulate LSP communication.
 public actor MockServer: ServerConnection {
+	/// A message sent from the client to the server.
 	public enum ClientMessage: Equatable, Sendable {
+		/// A notification from the client.
 		case notification(ClientNotification)
+		/// A request from the client.
 		case request(ClientRequest)
 	}
 
 	public typealias ClientMessageSequence = AsyncStream<ClientMessage>
 	private typealias ResponseDataSequence = AsyncStream<Data>
 
+	/// The sequence of server events.
 	public let eventSequence: EventSequence
 	private let eventContinuation: EventSequence.Continuation
 
 	private var mockResponses = [Data]()
 
+	/// The sequence of sent client messages.
 	public let sentMessageSequence: ClientMessageSequence
 	private let sentMessageContinuation: ClientMessageSequence.Continuation
 

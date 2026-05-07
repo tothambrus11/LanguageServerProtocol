@@ -1,23 +1,34 @@
 import Foundation
 
+/// Represents an LSP snippet string and provides parsing utilities.
 public struct Snippet {
+	/// A parsed element of a snippet.
 	public enum Element: Equatable {
+		/// A plain text element.
 		case text(String)
+		/// A tabstop with the given index.
 		case tabstop(Int)
+		/// A placeholder with an index and default text.
 		case placeholder(Int, String)
+		/// A choice with an index and list of values.
 		case choice(Int, [String])
+		/// A variable with a name and default value.
 		case variable(String, String)
+		/// A variable with a transform (name, regex, format, options).
 		case variableTransform(String, String, String, String)
 	}
 
+	/// The raw snippet string value.
 	public let value: String
 
+	/// Creates a snippet from a raw string value.
 	public init(value: String) {
 		self.value = value
 	}
 }
 
 extension Snippet {
+	/// The ranges of snippet elements within the raw value.
 	public var elementRanges: [NSRange] {
 		let regex = try! NSRegularExpression(pattern: #"\$(\w+|\{([^$]+)\})"#)
 
@@ -52,6 +63,7 @@ extension Snippet {
 		}
 	}
 
+	/// All parsed snippet elements.
 	public var elements: [Snippet.Element] {
 		var list = [Snippet.Element]()
 

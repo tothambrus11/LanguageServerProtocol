@@ -1,35 +1,56 @@
 import JSONRPC
 
+/// A placeholder type for responses that are not used.
 public typealias UnusedResult = LSPAny?
+/// A placeholder type for request parameters that are not used.
 public typealias UnusedParam = LSPAny?
 
+/// An error that occurs during LSP message dispatch.
 public enum ProtocolError: Error {
+	/// The method string was not recognized.
 	case unrecognizedMethod(String)
+	/// Required parameters were missing from the message.
 	case missingParams
+	/// A dynamic registration method was not handled.
 	case unhandledRegistrationMethod(String)
+	/// No reply was available for a request.
 	case missingReply
 }
 
+/// An event received by a server from a client.
 public enum ClientEvent: Sendable {
+	/// The result type for request handlers.
 	public typealias RequestResult = Result<Encodable & Sendable, AnyJSONRPCResponseError>
+	/// A closure that handles a request result.
 	public typealias RequestHandler = @Sendable (RequestResult) async -> Void
 
+	/// A request with its JSON-RPC id.
 	case request(id: JSONId, request: ClientRequest)
+	/// A notification.
 	case notification(ClientNotification)
+	/// A protocol-level error.
 	case error(Error)
 }
 
+/// An event received by a client from a server.
 public enum ServerEvent: Sendable {
+	/// The result type for request handlers.
 	public typealias RequestResult = Result<Encodable & Sendable, AnyJSONRPCResponseError>
+	/// A closure that handles a request result.
 	public typealias RequestHandler = @Sendable (RequestResult) async -> Void
 
+	/// A request with its JSON-RPC id.
 	case request(id: JSONId, request: ServerRequest)
+	/// A notification.
 	case notification(ServerNotification)
+	/// A protocol-level error.
 	case error(Error)
 	// case error(ServerError)
 }
 
+/// A notification sent from the client to the server.
 public enum ClientNotification: Sendable, Hashable {
+	/// The LSP method string for each client notification.
 	public enum Method: String, Hashable, Sendable {
 		case initialized
 		case exit
@@ -66,6 +87,7 @@ public enum ClientNotification: Sendable, Hashable {
 	case workspaceDidRenameFiles(RenameFilesParams)
 	case workspaceDidDeleteFiles(DeleteFilesParams)
 
+	/// The method string corresponding to this notification.
 	public var method: Method {
 		switch self {
 		case .initialized:
@@ -104,18 +126,23 @@ public enum ClientNotification: Sendable, Hashable {
 	}
 }
 
+/// A request sent from the client to the server.
 public enum ClientRequest: Sendable {
+	/// A closure that handles a typed response.
 	public typealias Handler<T: Sendable & Encodable> = @Sendable (
 		Result<T, AnyJSONRPCResponseError>
 	) async -> Void
+	/// A closure that handles an error-only response.
 	public typealias ErrorOnlyHandler = @Sendable (AnyJSONRPCResponseError?) async -> Void
 
 	// NOTE: The same `ClientRequest` type is used on the client side and the server side, only the server use the handler to send back the response, on the client side we use the `NullHandler`, which will never be called
+	/// A no-op handler used on the client side where no response callback is needed.
 	@Sendable
 	public static func NullHandler<T>(result: Result<T, AnyJSONRPCResponseError>) async {
 		// throw NullHandlerError.notImplemented(result)
 	}
 
+	/// The LSP method string for each client request.
 	public enum Method: String, Hashable, Sendable {
 		case initialize
 		case shutdown
@@ -226,6 +253,7 @@ public enum ClientRequest: Sendable {
 		TypeHierarchySupertypesParams, Handler<TypeHierarchySupertypesResponse>)
 	case custom(String, LSPAny, Handler<LSPAny>)
 
+	/// The method string corresponding to this request.
 	public var method: Method {
 		switch self {
 		case .initialize:
@@ -335,10 +363,11 @@ public enum ClientRequest: Sendable {
 }
 
 extension ClientRequest: Equatable {
-	/// Check for equality
-	///
-	/// This really stinks. But, the handler parameter was a big win for server-side development, and this is a one-time cost. Still, error-prone. Please take care when adding/modifying.
+	/// Returns whether two requests are equal, comparing only their parameters and ignoring handlers.
 	public static func == (lhs: ClientRequest, rhs: ClientRequest) -> Bool {
+		// This really stinks. But, the handler parameter was a big win for server-side development, and
+		// this is a one-time cost. Still, error-prone. Please take care when adding/modifying.
+
 		switch (lhs, rhs) {
 		case let (
 			.callHierarchyIncomingCalls(lhsParam, _), .callHierarchyIncomingCalls(rhsParam, _)
@@ -450,7 +479,9 @@ extension ClientRequest: Equatable {
 	}
 }
 
+/// A notification sent from the server to the client.
 public enum ServerNotification: Sendable, Hashable {
+	/// The LSP method string for each server notification.
 	public enum Method: String, Hashable, Sendable {
 		case windowLogMessage = "window/logMessage"
 		case windowShowMessage = "window/showMessage"
@@ -469,6 +500,7 @@ public enum ServerNotification: Sendable, Hashable {
 	case protocolProgress(ProgressParams)
 	case protocolLogTrace(LogTraceParams)
 
+	/// The method string corresponding to this notification.
 	public var method: Method {
 		switch self {
 		case .windowLogMessage:
@@ -489,13 +521,18 @@ public enum ServerNotification: Sendable, Hashable {
 	}
 }
 
+/// A request sent from the server to the client.
 public enum ServerRequest: Sendable {
+	/// A closure that handles a typed response.
 	public typealias Handler<T: Sendable & Encodable> = @Sendable (
 		Result<T, AnyJSONRPCResponseError>
 	) async -> Void
+	/// A closure that handles a void response.
 	public typealias VoidHandler = @Sendable () async -> Void
+	/// A closure that handles an error-only response.
 	public typealias ErrorOnlyHandler = @Sendable (AnyJSONRPCResponseError?) async -> Void
 
+	/// The LSP method string for each server request.
 	public enum Method: String {
 		case workspaceConfiguration = "workspace/configuration"
 		case workspaceFolders = "workspace/workspaceFolders"
@@ -522,6 +559,7 @@ public enum ServerRequest: Sendable {
 	case windowWorkDoneProgressCreate(WorkDoneProgressCreateParams, ErrorOnlyHandler)
 	case custom(String, LSPAny, Handler<LSPAny>)
 
+	/// The method string corresponding to this request.
 	public var method: Method {
 		switch self {
 		case .workspaceConfiguration:
@@ -549,6 +587,7 @@ public enum ServerRequest: Sendable {
 		}
 	}
 
+	/// Responds to this request with a generic internal error.
 	public func relyWithError(_ error: Error) async {
 		let protocolError = AnyJSONRPCResponseError(
 			code: JSONRPCErrors.internalError, message: "unsupported", data: nil)
@@ -580,7 +619,9 @@ public enum ServerRequest: Sendable {
 	}
 }
 
+/// A dynamic registration sent by the server to the client.
 public enum ServerRegistration {
+	/// The LSP method string for each registerable capability.
 	public enum Method: String {
 		case workspaceDidChangeWatchedFiles = "workspace/didChangeWatchedFiles"
 		case workspaceDidChangeConfiguration = "workspace/didChangeConfiguration"
@@ -594,6 +635,7 @@ public enum ServerRegistration {
 	case workspaceDidChangeConfiguration
 	case workspaceDidChangeWorkspaceFolders
 
+	/// The method string corresponding to this registration.
 	public var method: Method {
 		switch self {
 		case .workspaceDidChangeWatchedFiles:
