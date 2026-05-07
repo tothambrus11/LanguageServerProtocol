@@ -65,7 +65,7 @@ public struct LSPRange: Codable, Hashable, Sendable {
 	}
 
 	public func contains(_ position: Position) -> Bool {
-		return position > start && position < end
+		return position >= start && position < end
 	}
 
 	public func intersects(_ other: LSPRange) -> Bool {
