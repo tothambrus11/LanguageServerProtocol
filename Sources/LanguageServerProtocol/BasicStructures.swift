@@ -64,10 +64,12 @@ public struct LSPRange: Codable, Hashable, Sendable {
 		self.end = other.upperBound
 	}
 
+	/// Returns whether the position is in [start, end).
 	public func contains(_ position: Position) -> Bool {
 		return position >= start && position < end
 	}
 
+	/// Returns true iff there is any position contained both in `self` and `other`.
 	public func intersects(_ other: LSPRange) -> Bool {
 		return contains(other.start) || contains(other.end)
 	}
